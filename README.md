@@ -66,3 +66,12 @@ docker-compose down
 ## Quick Start (No Media Files)
 
 The app will work even without custom media files - it will use a gradient background and skip sounds if files are missing.
+
+## Optional: AI Voice (Kokoro TTS)
+
+To enable AI voice that speaks feedback messages:
+
+1. Download the Kokoro model: `git clone https://huggingface.co/hexgrad/Kokoro-82M ai_voice`
+2. Rebuild the container: `docker-compose up --build`
+
+If the `ai_voice/` folder is empty, the app runs normally without voice. The voice will speak the scrolling text (e.g., "Well done [name]!" or "Incorrect, the number was 42").

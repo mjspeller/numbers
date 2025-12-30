@@ -2,6 +2,9 @@
 images/
 sounds/
 
+# AI Voice model (optional Kokoro TTS)
+ai_voice/
+
 # Python
 __pycache__/
 *.py[cod]
