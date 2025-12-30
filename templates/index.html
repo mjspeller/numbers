@@ -87,6 +87,30 @@
             display: none;
             z-index: 1000;
         }
+        #scrollingText {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15vh;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.5), -2px -2px 4px rgba(255,255,255,0.3);
+            white-space: nowrap;
+            z-index: 1001;
+            display: none;
+        }
+        @keyframes scrollLeft {
+            from {
+                left: 100%;
+            }
+            to {
+                left: -100%;
+            }
+        }
+        .scrolling {
+            display: block !important;
+            animation: scrollLeft 3s linear;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +129,7 @@
     </div>
     
     <div id="feedback"></div>
+    <div id="scrollingText"></div>
     <audio id="audio"></audio>
 
     <script>
@@ -117,6 +142,7 @@
         const correctBtn = document.getElementById('correct');
         const incorrectBtn = document.getElementById('incorrect');
         const feedbackDiv = document.getElementById('feedback');
+        const scrollingText = document.getElementById('scrollingText');
         const audio = document.getElementById('audio');
         
         let currentMax = 99;
@@ -175,6 +201,19 @@
                 audio.src = `/sounds/${type}/${sndResponse.file}`;
                 audio.play().catch(() => {});
             }
+            
+            // Show scrolling text
+            if (isCorrect) {
+                const name = childName || 'friend';
+                scrollingText.textContent = `Well done ${name}!`;
+            } else {
+                const shownNumber = numberDiv.textContent;
+                scrollingText.textContent = `Incorrect, the number was ${shownNumber}`;
+            }
+            scrollingText.classList.add('scrolling');
+            scrollingText.addEventListener('animationend', () => {
+                scrollingText.classList.remove('scrolling');
+            }, { once: true });
             
             // After 2 seconds, show next number
             setTimeout(() => {
