@@ -20,6 +20,8 @@ images/
 sounds/
   ├── correct/         # Sound played when "Correct" is clicked (use: sound.mp3)
   └── incorrect/       # Sound played when "Incorrect" is clicked (use: sound.mp3)
+
+ai_voice/              # Optional: Kokoro TTS model files for AI voice (git-ignored)
 ```
 
 ## Setup Instructions
