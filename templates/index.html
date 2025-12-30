@@ -147,6 +147,41 @@
         
         let currentMax = 99;
         let childName = '';
+        let ttsAvailable = false;
+        
+        // Check if AI voice TTS is available
+        fetch('/tts-available')
+            .then(r => r.json())
+            .then(data => {
+                ttsAvailable = data.available;
+                console.log('TTS available:', ttsAvailable);
+            })
+            .catch(() => {
+                ttsAvailable = false;
+            });
+        
+        // Speak text using AI voice
+        async function speakText(text) {
+            if (!ttsAvailable) return;
+            
+            try {
+                const response = await fetch('/speak', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const ttsAudio = new Audio(url);
+                    ttsAudio.play().catch(() => {});
+                    ttsAudio.onended = () => URL.revokeObjectURL(url);
+                }
+            } catch (e) {
+                console.log('TTS error:', e);
+            }
+        }
         
         // Update slider value display
         maxSlider.addEventListener('input', (e) => {
@@ -214,6 +249,9 @@
             scrollingText.addEventListener('animationend', () => {
                 scrollingText.classList.remove('scrolling');
             }, { once: true });
+            
+            // Speak the scrolling text using AI voice (if available)
+            speakText(scrollingText.textContent);
             
             // After 2 seconds, show next number
             setTimeout(() => {

@@ -8,4 +8,5 @@ services:
     volumes:
       - ./images:/app/images
       - ./sounds:/app/sounds
+      - ./ai_voice:/app/ai_voice
     restart: unless-stopped
