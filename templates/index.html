@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Learning</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #maxNumber {
+            width: 200px;
+            margin: 0 10px;
+        }
+        #number {
+            font-size: 70vh;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+            display: none;
+        }
+        #buttons {
+            position: absolute;
+            bottom: 50px;
+            display: none;
+            gap: 30px;
+        }
+        button {
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        #correct { background: #4CAF50; color: white; }
+        #incorrect { background: #f44336; color: white; }
+        #start {
+            background: #2196F3;
+            color: white;
+            padding: 30px 60px;
+            font-size: 32px;
+        }
+        #nameInput {
+            padding: 15px 20px;
+            font-size: 24px;
+            border: 3px solid #2196F3;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 300px;
+        }
+        #nameInput::placeholder {
+            color: #999;
+        }
+        #feedback {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label>Max Number: <span id="maxValue">99</span></label>
+        <input type="range" id="maxNumber" min="0" max="1001" value="99">
+    </div>
+    
+    <div id="number"></div>
+    <input type="text" id="nameInput" placeholder="Child's Name (optional)">
+    <button id="start">Start</button>
+    
+    <div id="buttons">
+        <button id="correct">✓ Correct</button>
+        <button id="incorrect">✗ Incorrect</button>
+    </div>
+    
+    <div id="feedback"></div>
+    <audio id="audio"></audio>
+
+    <script>
+        const maxSlider = document.getElementById('maxNumber');
+        const maxValue = document.getElementById('maxValue');
+        const numberDiv = document.getElementById('number');
+        const nameInput = document.getElementById('nameInput');
+        const startBtn = document.getElementById('start');
+        const buttonsDiv = document.getElementById('buttons');
+        const correctBtn = document.getElementById('correct');
+        const incorrectBtn = document.getElementById('incorrect');
+        const feedbackDiv = document.getElementById('feedback');
+        const audio = document.getElementById('audio');
+        
+        let currentMax = 99;
+        let childName = '';
+        
+        // Update slider value display
+        maxSlider.addEventListener('input', (e) => {
+            currentMax = parseInt(e.target.value);
+            maxValue.textContent = currentMax;
+        });
+        
+        // Load random background
+        function loadBackground() {
+            fetch('/images/backgrounds/')
+                .then(() => {
+                    const bgNum = Math.floor(Math.random() * 10) + 1;
+                    document.body.style.backgroundImage = `url('/images/backgrounds/bg${bgNum}.jpg')`;
+                })
+                .catch(() => {
+                    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                });
+        }
+        
+        // Get new random number
+        function getNewNumber() {
+            fetch(`/random/${currentMax}`)
+                .then(r => r.json())
+                .then(data => {
+                    numberDiv.textContent = data.number;
+                    numberDiv.style.display = 'block';
+                    buttonsDiv.style.display = 'flex';
+                    startBtn.style.display = 'none';
+                });
+        }
+        
+        // Play feedback
+        async function playFeedback(isCorrect) {
+            const type = isCorrect ? 'correct' : 'incorrect';
+            
+            // Hide number and buttons
+            numberDiv.style.display = 'none';
+            buttonsDiv.style.display = 'none';
+            
+            // Get random image and sound
+            const imgResponse = await fetch(`/random-media/images/${type}`).then(r => r.json());
+            const sndResponse = await fetch(`/random-media/sounds/${type}`).then(r => r.json());
+            
+            // Show feedback image
+            if (imgResponse.file) {
+                feedbackDiv.style.backgroundImage = `url('/images/${type}/${imgResponse.file}')`;
+            }
+            feedbackDiv.style.display = 'block';
+            
+            // Play sound
+            if (sndResponse.file) {
+                audio.src = `/sounds/${type}/${sndResponse.file}`;
+                audio.play().catch(() => {});
+            }
+            
+            // After 2 seconds, show next number
+            setTimeout(() => {
+                feedbackDiv.style.display = 'none';
+                getNewNumber();
+            }, 2000);
+        }
+        
+        // Event listeners
+        startBtn.addEventListener('click', () => {
+            childName = nameInput.value.trim();
+            nameInput.style.display = 'none';
+            getNewNumber();
+        });
+        correctBtn.addEventListener('click', () => playFeedback(true));
+        incorrectBtn.addEventListener('click', () => playFeedback(false));
+        
+        // Initialize
+        loadBackground();
+    </script>
+</body>
+</html>
